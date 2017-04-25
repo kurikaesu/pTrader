@@ -48,6 +48,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Xamarin.Mac" />
+    <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
     <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Contents.json" />
@@ -65,6 +66,8 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\" />
+    <Folder Include="Components\" />
+    <Folder Include="Models\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />
@@ -96,6 +99,8 @@
     <Compile Include="TradeJournalEntryController.designer.cs">
       <DependentUpon>TradeJournalEntryController.cs</DependentUpon>
     </Compile>
+    <Compile Include="Models\TradeJournalEntryModel.cs" />
+    <Compile Include="Components\ModelUtils.cs" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="Main.storyboard" />
