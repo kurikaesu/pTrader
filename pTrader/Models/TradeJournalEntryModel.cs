@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using Newtonsoft.Json;
 
 namespace pTrader
 {
@@ -7,7 +8,23 @@ namespace pTrader
 	{
 		private long profileId;
 		private long entryId;
-		private string data;
+
+		// Data points
+
+		// Entry
+		private DateTime entryDate;
+		private string entryType;
+		private string entrySetup;
+		private float entrySize;
+		private float entryPrice;
+		private float entryStopLoss;
+		private float entryTakeProfit;
+
+		// Exit
+		private DateTime exitDate;
+		private float exitPrice;
+		private float profitLoss;
+		private float fees;
 
 		// Data parameters used for queries
 		IDbDataParameter profileParam;
@@ -15,6 +32,10 @@ namespace pTrader
 		IDbDataParameter dataParam;
 
 		// Various queries used
+		private const string checkDbExistsSql = "SELECT * FROM TradeJournalEntry";
+		private const string createTableSql = "CREATE TABLE TradeJournalEntry (profile_id INTEGER " +
+			"NOT NULL, entry_id INTEGER NOT NULL, data TEXT)";
+
 		private const string getDataSql = "SELECT data FROM TradeJournalEntry WHERE profile_id=" +
 			"@profileId AND entry_id=@entryId";
 
@@ -27,8 +48,30 @@ namespace pTrader
 		private const string lastEntryIdSql = "SELECT MAX(entry_id) FROM TradeJournalEntry WHERE " +
 			"profile_id=@profileId";
 
+		public void CheckCreateTable(IDbConnection conn)
+		{
+			conn.Open();
+			IDbCommand cmd = conn.CreateCommand();
+			cmd.CommandText = checkDbExistsSql;
+
+			try
+			{
+				IDataReader reader = cmd.ExecuteReader();
+				reader.Close();
+			}
+			catch (Exception)
+			{
+				cmd.CommandText = createTableSql;
+				cmd.ExecuteNonQuery();
+			}
+
+			conn.Close();
+		}
+
 		public TradeJournalEntryModel(IDbConnection conn, long profileId = 0, long entryId = 0)
 		{
+			CheckCreateTable(conn);
+			
 			this.profileId = profileId;
 			this.entryId = entryId;
 
@@ -65,7 +108,7 @@ namespace pTrader
 				IDataReader reader = cmd.ExecuteReader();
 				while (reader.Read())
 				{
-					this.data = ModelUtils.UnpackData(reader.GetString(0));
+					// = ModelUtils.UnpackData(reader.GetString(0));
 				}
 
 				reader.Close();
@@ -74,24 +117,11 @@ namespace pTrader
 			}
 		}
 
-		public string EntryData
-		{
-			get
-			{
-				return data;
-			}
-			set
-			{
-				// Might do something about this in the future?
-				data = value;
-			}
-		}
-
 		public bool Save(IDbConnection conn)
 		{
 			if (profileId != 0)
 			{
-				dataParam.Value = ModelUtils.PackData(data);
+				dataParam.Value = ModelUtils.PackData(JsonConvert.SerializeObject(this));
 				profileParam.Value = profileId;
 				
 				conn.Open();
@@ -118,7 +148,15 @@ namespace pTrader
 					IDataReader reader = cmd.ExecuteReader();
 					while (reader.Read())
 					{
-						entryId = reader.GetInt64(0) + 1;
+						try
+						{
+							entryId = reader.GetInt64(0) + 1;
+						}
+						catch (InvalidCastException)
+						{
+							entryId = 1;
+							break;
+						}
 					}
 
 					reader.Close();
@@ -137,6 +175,140 @@ namespace pTrader
 			}
 
 			return false;
+		}
+
+		// Entry fields
+		public DateTime EntryDate
+		{
+			get
+			{
+				return entryDate;
+			}
+			set
+			{
+				entryDate = value;
+			}
+		}
+
+		public string EntryType
+		{
+			get
+			{
+				return entryType;
+			}
+			set
+			{
+				entryType = value;
+			}
+		}
+
+		public string EntrySetup
+		{
+			get
+			{
+				return entrySetup;
+			}
+			set
+			{
+				entrySetup = value;
+			}
+		}
+
+		public float EntrySize
+		{
+			get
+			{
+				return entrySize;
+			}
+			set
+			{
+				entrySize = value;
+			}
+		}
+
+		public float EntryPrice
+		{
+			get
+			{
+				return entryPrice;
+			}
+			set
+			{
+				entryPrice = value;
+			}
+		}
+
+		public float StopLoss
+		{
+			get
+			{
+				return entryStopLoss;
+			}
+			set
+			{
+				entryStopLoss = value;
+			}
+		}
+
+		public float TakeProfit
+		{
+			get
+			{
+				return entryStopLoss;
+			}
+			set
+			{
+				entryTakeProfit = value;
+			}
+		}
+
+		// Exit fields
+		public DateTime ExitDate
+		{
+			get
+			{
+				return exitDate;
+			}
+			set
+			{
+				exitDate = value;
+			}
+		}
+
+		public float ExitPrice
+		{
+			get
+			{
+				return exitPrice;
+			}
+			set
+			{
+				exitPrice = value;
+			}
+		}
+
+		public float ProfitLoss
+		{
+			get
+			{
+				return profitLoss;
+			}
+			set
+			{
+				profitLoss = value;
+			}
+		}
+
+		public float Fees
+		{
+			get
+			{
+				return fees;
+			}
+			set
+			{
+				fees = value;
+			}
 		}
 	}
 }
