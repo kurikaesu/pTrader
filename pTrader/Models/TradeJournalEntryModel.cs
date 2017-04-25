@@ -68,12 +68,52 @@ namespace pTrader
 			conn.Close();
 		}
 
-		public TradeJournalEntryModel(IDbConnection conn, long profileId = 0, long entryId = 0)
+		public static TradeJournalEntryModel FromDatabaseRecord(IDbConnection conn, long profileId, long entryId)
+		{
+			string data = "";
+			if (profileId != 0 && entryId != 0)
+			{
+				IDbCommand cmd = conn.CreateCommand();
+
+				IDbDataParameter profileParam = cmd.CreateParameter();
+				IDbDataParameter entryParam = cmd.CreateParameter();
+
+				cmd.CommandText = getDataSql;
+
+				profileParam.ParameterName = "@profileId";
+				entryParam.ParameterName = "@entryId";
+
+				profileParam.DbType = DbType.Int64;
+				profileParam.DbType = DbType.Int64;
+
+				profileParam.Value = profileId;
+				entryParam.Value = entryId;
+
+				conn.Open();
+
+				cmd.Parameters.Add(profileParam);
+				cmd.Parameters.Add(entryParam);
+				cmd.Prepare();
+
+				IDataReader reader = cmd.ExecuteReader();
+				while (reader.Read())
+				{
+					data = ModelUtils.UnpackData(reader.GetString(0));
+				}
+
+				reader.Close();
+
+				conn.Close();
+			}
+			return JsonConvert.DeserializeObject<TradeJournalEntryModel>(data);
+		}
+
+		public TradeJournalEntryModel(IDbConnection conn, long profileId = 0)//, long entryId = 0)
 		{
 			CheckCreateTable(conn);
 			
 			this.profileId = profileId;
-			this.entryId = entryId;
+			this.entryId = 0;
 
 			IDbCommand cmd = conn.CreateCommand();
 
@@ -92,6 +132,7 @@ namespace pTrader
 			dataParam.ParameterName = "@data";
 			entryParam.DbType = DbType.String;
 
+			/*
 			if (profileId != 0 && entryId != 0)
 			{
 				cmd.CommandText = getDataSql;
@@ -115,6 +156,7 @@ namespace pTrader
 
 				conn.Close();
 			}
+			*/
 		}
 
 		public bool Save(IDbConnection conn)
@@ -175,6 +217,18 @@ namespace pTrader
 			}
 
 			return false;
+		}
+
+		public long EntryId
+		{
+			get
+			{
+				return entryId;
+			}
+			set
+			{
+				entryId = value;
+			}
 		}
 
 		// Entry fields

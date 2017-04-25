@@ -12,9 +12,15 @@ namespace pTrader
 	[Register ("TradeJournal")]
 	partial class TradeJournal
 	{
+		[Outlet]
+		AppKit.NSTableView TradeJournalEntryList { get; set; }
 		
 		void ReleaseDesignerOutlets ()
 		{
+			if (TradeJournalEntryList != null) {
+				TradeJournalEntryList.Dispose ();
+				TradeJournalEntryList = null;
+			}
 		}
 	}
 }
