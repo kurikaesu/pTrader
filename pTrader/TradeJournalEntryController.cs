@@ -44,5 +44,12 @@ namespace pTrader
 				return (TradeJournalEntry)base.View;
 			}
 		}
+
+		public override void ViewDidLoad()
+		{
+			base.ViewDidLoad();
+
+			((TradeJournalEntry)base.View).SetupView();
+		}
 	}
 }

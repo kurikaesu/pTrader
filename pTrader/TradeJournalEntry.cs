@@ -29,5 +29,29 @@ namespace pTrader
 		}
 
 		#endregion
+
+		public void SetupView()
+		{
+
+		}
+
+		public void textViewDidChange(NSNotification notification)
+		{
+			Console.WriteLine("Changed");
+		}
+
+		[Action("CancelButtonPressed:")]
+		public void Cancel(NSObject sender)
+		{
+			this.Window.Close();
+		}
+
+		[Action("SaveButtonPressed:")]
+		public void Save(NSObject sender)
+		{
+			string typeValue = EntryType.StringValue;
+			Console.WriteLine(typeValue);
+			this.Window.Close();
+		}
 	}
 }
